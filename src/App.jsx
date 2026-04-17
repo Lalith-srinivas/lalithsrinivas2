@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { SiReact, SiNextdotjs, SiTailwindcss, SiNodedotjs, SiOpenai, SiFramer } from 'react-icons/si';
-import { FiGithub, FiLinkedin, FiMail, FiExternalLink } from 'react-icons/fi';
+import { FiGithub, FiLinkedin, FiMail, FiExternalLink, FiMenu, FiX } from 'react-icons/fi';
 
 import LogoLoop from './components/LogoLoop/LogoLoop';
 import OrbitImages from './components/OrbitImages/OrbitImages';
@@ -23,10 +23,10 @@ const techLogos = [
 ];
 
 const orbitImages = [
-  'https://picsum.photos/300/300?grayscale&random=10',
-  'https://picsum.photos/300/300?grayscale&random=20',
-  'https://picsum.photos/300/300?grayscale&random=30',
-  'https://picsum.photos/300/300?grayscale&random=40',
+  '/gesture_glowing_hand_1776401542460.png',
+  '/gesture_finger_pinch_1776401678518.png',
+  '/gesture_ai_vision_1776401705507.png',
+  '/gesture_hand_landmarks_1776401721457.png',
 ];
 
 const orbitLabels = ['Air Draw', 'Fruit Ninja', 'Flappy Bird', 'Dashboard'];
@@ -36,13 +36,13 @@ const projects = [
     title: 'WebRyza',
     desc: 'AI-powered web analysis tool that extracts insights from any webpage using LLM integration.',
     tech: ['React', 'Node.js', 'OpenAI', 'LangChain'],
-    link: '#',
+    link: 'https://webryza.vercel.app/',
   },
   {
     title: 'Gesture Studio',
     desc: 'Suite of hand-gesture controlled applications — Air Draw, Fruit Ninja, Flappy Bird.',
     tech: ['React', 'MediaPipe', 'Canvas API', 'WebRTC'],
-    link: '#',
+    link: 'https://gesturestudio.vercel.app/',
   },
   {
     title: 'AI Content Engine',
@@ -70,23 +70,41 @@ const scrollVelocityTexts = [
 export default function App() {
   const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const closeMenu = () => setIsMenuOpen(false);
 
   useEffect(() => {
-    setIsLoaded(true);
+    // Artificial delay for preloader animation
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 2000);
 
     const handleMouse = (e) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener('mousemove', handleMouse);
-    return () => window.removeEventListener('mousemove', handleMouse);
+    return () => {
+      window.removeEventListener('mousemove', handleMouse);
+      clearTimeout(timer);
+    };
   }, []);
 
   const scrollTo = (id) => {
+    closeMenu();
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <>
+      {/* ── Preloader ──────────────────────────────────── */}
+      <div className={`preloader ${isLoaded ? 'preloader--hidden' : ''}`}>
+        <div className="preloader__logo">
+          <span>LS</span>
+        </div>
+      </div>
+
       {/* Mouse Glow */}
       <div
         className="mouse-glow"
@@ -94,25 +112,57 @@ export default function App() {
       />
 
       {/* ── Navigation ─────────────────────────────────── */}
-      <nav className="nav" id="nav">
-        <a className="nav__link" onClick={() => scrollTo('hero')} href="#hero">Home</a>
-        <a className="nav__link" onClick={() => scrollTo('about')} href="#about">About</a>
-        <div className="nav__logo">
-          <span>LS</span>
+      <nav className={`nav ${isMenuOpen ? 'nav--open' : ''}`} id="nav">
+        <div className="nav__mobile-header">
+          <div className="nav__logo nav__logo--mobile">
+            <span>LS</span>
+          </div>
+          <button className="nav__hamburger" onClick={toggleMenu} aria-label="Toggle menu">
+            {isMenuOpen ? <FiX /> : <FiMenu />}
+          </button>
         </div>
-        <a className="nav__link" onClick={() => scrollTo('projects')} href="#projects">Projects</a>
-        <a className="nav__link" onClick={() => scrollTo('contact')} href="#contact">Contact</a>
+
+        <div className={`nav__links ${isMenuOpen ? 'nav__links--open' : ''}`}>
+          <a className="nav__link" onClick={() => scrollTo('hero')} href="#hero">Home</a>
+          <a className="nav__link" onClick={() => scrollTo('about')} href="#about">About</a>
+          <div className="nav__logo nav__logo--desktop">
+            <span>LS</span>
+          </div>
+          <a className="nav__link" onClick={() => scrollTo('projects')} href="#projects">Projects</a>
+          <a className="nav__link" onClick={() => scrollTo('contact')} href="#contact">Contact</a>
+        </div>
       </nav>
 
       {/* ── 1. HERO SECTION ────────────────────────────── */}
       <section className="hero section" id="hero">
+        {/* Background Text Headline (Behind Image) */}
+        <h1 className="hero__hud-headline">
+          <span className="hud-word delay-1">BUILD.</span>
+          <span className="hud-word delay-2">INTERACT.</span>
+          <span className="hud-word delay-3">EVOLVE.</span>
+        </h1>
+
         <CursorLens
           baseImage="/avatar.png"
           revealImage="/vr.png"
           className="cursor-lens-container"
+          backgroundColor="transparent"
           blobSize={150} /* Increased to match the large reference lens */
           objectFit="contain" /* Changed to 'contain' to decrease the avatar size */
         />
+
+        {/* HUD Overlay Text (Front) */}
+        <div className="hero__hud">
+          <div className="hero__hud-subtext delay-4 hover-flicker">
+            <div className="hud-line" />
+            <span>Frontend Developer</span>
+            <span className="hud-plus">+</span>
+            <span>Creative Tech</span>
+            <span className="hud-plus">+</span>
+            <span>AI Experiments</span>
+          </div>
+        </div>
+
         <div className="hero__scroll-indicator fade-in-up delay-5">
           <span>Scroll</span>
           <div className="hero__scroll-line" />
@@ -151,8 +201,10 @@ export default function App() {
             itemSize={90}
             responsive={true}
             centerContent={
-              <div>
-                <div className="featured__center-label">Gesture Studio</div>
+              <div style={{ pointerEvents: 'auto' }}>
+                <a href="https://gesturestudio.vercel.app/" className="featured__center-label" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.3s ease' }}>
+                  Gesture Studio
+                </a>
                 <div className="featured__center-sub">Hand-Tracking Powered</div>
               </div>
             }
